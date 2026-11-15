@@ -1,0 +1,22 @@
+[
+  {"id":"captain-placeholder","name":"Captain Placeholder","aliases":["capplaceholder","the captain"],"category":"Film & TV","descriptor":"Fictional action-movie star","initials":"C.P."},
+  {"id":"senator-sample","name":"Senator Sample","aliases":["sensample"],"category":"Politics","descriptor":"Fictional career politician","initials":"S.S."},
+  {"id":"dj-lorem","name":"DJ Lorem","aliases":["djlorem","lorem"],"category":"Music","descriptor":"Fictional festival DJ","initials":"D.L."},
+  {"id":"ada-mockwell","name":"Ada Mockwell","aliases":["adamock"],"category":"Tech","descriptor":"Fictional startup founder","initials":"A.M."},
+  {"id":"rex-fixture","name":"Rex Fixture","aliases":["trex"],"category":"Sports","descriptor":"Fictional quarterback","initials":"R.F."},
+  {"id":"nina-null","name":"Nina Null","aliases":["ninanull"],"category":"Internet","descriptor":"Fictional livestreamer","initials":"N.N."},
+  {"id":"professor-stub","name":"Professor Stub","aliases":["profstub"],"category":"Science","descriptor":"Fictional astrophysicist","initials":"P.S."},
+  {"id":"betty-beta","name":"Betty Beta","aliases":["bbeta"],"category":"Media","descriptor":"Fictional talk-show host","initials":"B.B."},
+  {"id":"max-margin","name":"Max Margin","aliases":["maxm"],"category":"Business","descriptor":"Fictional hedge-fund manager","initials":"M.M."},
+  {"id":"lola-ipsum","name":"Lola Ipsum","aliases":["lolaipsum"],"category":"Music","descriptor":"Fictional pop singer","initials":"L.I."},
+  {"id":"governor-dummy","name":"Governor Dummy","aliases":["govdummy"],"category":"Politics","descriptor":"Fictional state governor","initials":"G.D."},
+  {"id":"terry-test","name":"Terry Test","aliases":["ttest"],"category":"Sports","descriptor":"Fictional tennis champion","initials":"T.T."},
+  {"id":"mona-mock","name":"Mona Mock","aliases":["monamock"],"category":"Film & TV","descriptor":"Fictional sitcom actor","initials":"M.M."},
+  {"id":"foo-barrington","name":"Foo Barrington","aliases":["foobar"],"category":"Tech","descriptor":"Fictional open-source maintainer","initials":"F.B."},
+  {"id":"sandy-sandbox","name":"Sandy Sandbox","aliases":["sandbox"],"category":"Internet","descriptor":"Fictional meme account","initials":"S.S."},
+  {"id":"quinn-query","name":"Quinn Query","aliases":["qq"],"category":"Media","descriptor":"Fictional investigative reporter","initials":"Q.Q."},
+  {"id":"buzz-benchmark","name":"Buzz Benchmark","aliases":["buzzb"],"category":"Science","descriptor":"Fictional retired astronaut","initials":"B.B."},
+  {"id":"cash-cache","name":"Cash Cache","aliases":["cashcache"],"category":"Business","descriptor":"Fictional retail billionaire","initials":"C.C."},
+  {"id":"ella-example","name":"Ella Example","aliases":["ellaex"],"category":"Music","descriptor":"Fictional country singer","initials":"E.E."},
+  {"id":"zed-zero","name":"Zed Zero","aliases":["zz"],"category":"Sports","descriptor":"Fictional skateboarder","initials":"Z.Z."}
+]

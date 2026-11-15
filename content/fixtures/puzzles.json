@@ -1,0 +1,157 @@
+[
+  {
+    "number": 1,
+    "authorId": "ada-mockwell",
+    "tweets": [
+      {
+        "text": "Sample tweet: slept under my desk again. Worth it.",
+        "date": "2012-03-04",
+        "url": "https://example.com/status/101"
+      },
+      {
+        "text": "Sample tweet: if your deploy takes longer than your coffee, fix your deploy.",
+        "date": "2014-07-19",
+        "url": "https://example.com/status/102"
+      },
+      {
+        "text": "Sample tweet: we just closed our seed round. Thank you to everyone who said no first.",
+        "date": "2015-01-22",
+        "url": "https://example.com/status/103"
+      },
+      {
+        "text": "Sample tweet: [[Mockwell Labs]] is hiring. Bring your own keyboard.",
+        "date": "2017-10-02",
+        "url": "https://example.com/status/104"
+      },
+      {
+        "text": "Sample tweet: move fast and write tests.",
+        "date": "2019-05-30",
+        "url": "https://example.com/status/105"
+      }
+    ]
+  },
+  {
+    "number": 2,
+    "authorId": "dj-lorem",
+    "tweets": [
+      {
+        "text": "Sample tweet: airport wifi is my real home.",
+        "date": "2011-08-12",
+        "url": "https://example.com/status/201"
+      },
+      {
+        "text": "Sample tweet: soundcheck at noon, nap at one, chaos at eleven.",
+        "date": "2013-06-01",
+        "url": "https://example.com/status/202"
+      },
+      {
+        "text": "Sample tweet: new track drops friday. it has a drop. obviously.",
+        "date": "2016-02-14",
+        "url": "https://example.com/status/203"
+      },
+      {
+        "text": "Sample tweet: thank you main stage. 60,000 hands in the air.",
+        "date": "2018-07-28",
+        "url": "https://example.com/status/204"
+      },
+      {
+        "text": "Sample tweet: [[LOREM]] WORLD TOUR. tickets now.",
+        "date": "2020-01-10",
+        "url": "https://example.com/status/205"
+      }
+    ]
+  },
+  {
+    "number": 3,
+    "authorId": "senator-sample",
+    "tweets": [
+      {
+        "text": "Sample tweet: great turnout at the county fair today.",
+        "date": "2010-09-05",
+        "url": "https://example.com/status/301"
+      },
+      {
+        "text": "Sample tweet: I will always fight for hardworking families.",
+        "date": "2012-10-30",
+        "url": "https://example.com/status/302"
+      },
+      {
+        "text": "Sample tweet: proud to cosponsor the Placeholder Infrastructure Act.",
+        "date": "2015-04-17",
+        "url": "https://example.com/status/303"
+      },
+      {
+        "text": "Sample tweet: my statement on today's vote is attached.",
+        "date": "2018-12-11",
+        "url": "https://example.com/status/304"
+      },
+      {
+        "text": "Sample tweet: I am announcing my candidacy. Join us: [[sample.example]]",
+        "date": "2021-06-21",
+        "url": "https://example.com/status/305"
+      }
+    ]
+  },
+  {
+    "number": 100001,
+    "authorId": "rex-fixture",
+    "tweets": [
+      {
+        "text": "Sample tweet: leg day. again.",
+        "date": "2011-02-03",
+        "url": "https://example.com/status/1000011"
+      },
+      {
+        "text": "Sample tweet: new personal best in the placeholder press.",
+        "date": "2013-05-19",
+        "url": "https://example.com/status/1000012"
+      },
+      {
+        "text": "Sample tweet: protein is a food group, do not argue.",
+        "date": "2016-08-08",
+        "url": "https://example.com/status/1000013"
+      },
+      {
+        "text": "Sample tweet: training camp opens Monday.",
+        "date": "2019-01-27",
+        "url": "https://example.com/status/1000014"
+      },
+      {
+        "text": "Sample tweet: retiring from the Fixture League after 12 seasons.",
+        "date": "2022-11-30",
+        "url": "https://example.com/status/1000015"
+      }
+    ]
+  },
+  {
+    "number": 100002,
+    "authorId": "nina-null",
+    "tweets": [
+      {
+        "text": "Sample tweet: soundcheck at 4.",
+        "date": "2010-06-11",
+        "url": "https://example.com/status/1000021"
+      },
+      {
+        "text": "Sample tweet: wrote three songs on the bus.",
+        "date": "2012-09-02",
+        "url": "https://example.com/status/1000022"
+      },
+      {
+        "text": "Sample tweet: the album is done.",
+        "date": "2015-03-14",
+        "url": "https://example.com/status/1000023"
+      },
+      {
+        "text": "Sample tweet: tour dates tomorrow.",
+        "date": "2018-07-07",
+        "url": "https://example.com/status/1000024"
+      },
+      {
+        "text": "Sample tweet: thank you for ten years of listening.",
+        "date": "2021-12-01",
+        "url": "https://example.com/status/1000025"
+      }
+    ]
+  }
+]

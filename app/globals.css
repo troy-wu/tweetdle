@@ -1,0 +1,217 @@
+@import "tailwindcss";
+
+/*
+ * One theme: newsprint. Paper, ink, hairline rules, one brick-red accent.
+ * No shadows, no gradients, corners at most 2px.
+ */
+:root {
+  --bg: #f4f1ea;
+  --card: #fbfaf6;
+  --soft: #e9e5da;
+  --ink: #161616;
+  --muted: #6b675f;
+  --line: #cfcabd;
+  --accent: #9c2a1f;
+  --good: #2f5d3a;
+  --bad: #9c2a1f;
+  /* Text on top of ink / accent / good fills. */
+  --on-color: #fbfaf6;
+  color-scheme: light;
+}
+
+@theme inline {
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-soft: var(--soft);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-good: var(--good);
+  --color-bad: var(--bad);
+  --color-on-color: var(--on-color);
+  --animate-pop: reveal 0.3s ease-out both;
+  --animate-shake: shake 0.35s ease-in-out both;
+  --animate-rise: reveal 0.2s ease-out both;
+  --animate-fade: fade 0.2s ease-out both;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25%,
+  75% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes shimmer {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+@layer components {
+  /* Small letter-spaced caps: section labels, dates, counts. */
+  .label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 46px;
+    padding: 0.55rem 1.1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.1;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.12s ease, color 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:hover:not(:disabled) {
+    background: var(--soft);
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  /* The one primary action on a screen: solid ink. */
+  .btn-accent,
+  .btn-good {
+    background: var(--ink);
+    color: var(--on-color);
+  }
+  .btn-accent:hover:not(:disabled),
+  .btn-good:hover:not(:disabled) {
+    background: #33312d;
+  }
+  .btn-xl {
+    min-height: 54px;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+  }
+  .btn-icon {
+    min-height: 40px;
+    width: 40px;
+    padding: 0;
+    border-color: transparent;
+  }
+
+  /* Quiet text link. */
+  .link {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--line);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .link:hover {
+    text-decoration-color: var(--ink);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .field {
+    width: 100%;
+    min-height: 46px;
+    padding: 0.55rem 0.8rem;
+    font-size: 1.05rem; /* 16px+ stops iOS zooming on focus */
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    outline: none;
+  }
+  .field::placeholder {
+    color: var(--muted);
+  }
+  .field:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 1px;
+  }
+
+  .redacted {
+    display: inline-block;
+    width: 4em;
+    height: 0.95em;
+    vertical-align: -0.12em;
+    background: var(--ink);
+  }
+
+  .skeleton {
+    background: var(--soft);
+    border-radius: 2px;
+    animation: shimmer 1.2s ease-in-out infinite;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
