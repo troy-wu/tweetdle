@@ -14,6 +14,9 @@ export function Header() {
           <Wordmark />
         </Link>
         <nav className="flex items-center" aria-label="Main">
+          <Link href="/about" className="mr-1 px-1 text-xs text-muted hover:text-ink">
+            About
+          </Link>
           <button type="button" className="btn btn-icon" onClick={() => open("help")} aria-label="How to play">
             <HelpIcon />
           </button>

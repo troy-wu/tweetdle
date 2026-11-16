@@ -21,6 +21,9 @@ export const LAUNCH_DATE = process.env.NEXT_PUBLIC_LAUNCH_DATE || "2026-11-16";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 export const SITE_NAME = "Tweetdle";
 
+/** Credit link on the About page. */
+export const CREATOR_LINKEDIN = "https://www.linkedin.com/in/troy-wu/";
+
 /**
  * Unlimited mode draws from a separate pool: puzzles numbered above this.
  * They are never a daily puzzle and never count for streaks or leaderboards.
