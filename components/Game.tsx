@@ -2,9 +2,18 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MAX_GUESSES, isPracticeNumber } from "@/lib/constants";
-import { getAuthors, getPracticeNumbers, getPuzzle, getStats, submitResult } from "@/lib/api";
+import {
+  type ReviewPuzzle,
+  getAuthors,
+  getPracticeNumbers,
+  getPuzzle,
+  getReviewPuzzle,
+  getStats,
+  submitResult,
+} from "@/lib/api";
 import {
   applyGuess,
+  applySkip,
   deleteGames,
   findAnswerId,
   getDeviceId,
@@ -27,6 +36,7 @@ import { GuessPips } from "./GuessPips";
 import { HintChips } from "./HintChips";
 import { bumpStorage } from "./hooks";
 import { type Outcome, ResultPanel } from "./ResultPanel";
+import { ReviewRater } from "./ReviewRater";
 import { TweetCard } from "./TweetCard";
 
 type Load =
@@ -72,8 +82,18 @@ async function pickPracticeNumber(): Promise<number | null> {
   return fresh.length ? fresh[Math.floor(Math.random() * fresh.length)] : null;
 }
 
-export function Game({ mode = "daily" }: { mode?: "daily" | "unlimited" }) {
+export function Game({
+  mode = "daily",
+  reviewNumber,
+}: {
+  mode?: "daily" | "unlimited" | "review";
+  /** Review mode only: the puzzle to play. */
+  reviewNumber?: number;
+}) {
   const unlimited = mode === "unlimited";
+  /** Review mode plays any puzzle in memory only: nothing is saved, submitted or counted. */
+  const review = mode === "review";
+  const [reviewData, setReviewData] = useState<ReviewPuzzle | null>(null);
   const [load, setLoad] = useState<Load>({ phase: "loading" });
   const [game, setGame] = useState<GameState | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
@@ -81,6 +101,7 @@ export function Game({ mode = "daily" }: { mode?: "daily" | "unlimited" }) {
   const [attempt, setAttempt] = useState(0);
   const [shake, setShake] = useState(0);
   const [checking, setChecking] = useState(false);
+  const [confirmSkip, setConfirmSkip] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -126,6 +147,14 @@ export function Game({ mode = "daily" }: { mode?: "daily" | "unlimited" }) {
     let cancelled = false;
     (async () => {
       try {
+        if (review) {
+          const [data, authors] = await Promise.all([getReviewPuzzle(reviewNumber ?? 0), getAuthors()]);
+          if (cancelled) return;
+          setReviewData(data);
+          setGame(newGame(data.puzzle.number, Date.now()));
+          setLoad({ phase: "ready", puzzle: data.puzzle, authors, initialVisible: 1 });
+          return;
+        }
         const n = unlimited ? await pickPracticeNumber() : puzzleNumberForDate(new Date());
         if (cancelled) return;
         if (n === null) {
@@ -156,7 +185,7 @@ export function Game({ mode = "daily" }: { mode?: "daily" | "unlimited" }) {
     return () => {
       cancelled = true;
     };
-  }, [attempt, finish, unlimited]);
+  }, [attempt, finish, unlimited, review, reviewNumber]);
 
   // Bring the newest tweet into view after a wrong guess.
   const wrongCount = game && game.status === "playing" ? game.guesses.length : 0;
@@ -235,32 +264,68 @@ export function Game({ mode = "daily" }: { mode?: "daily" | "unlimited" }) {
     setChecking(true);
     try {
       const correct = await isCorrectGuess(puzzle, author.id);
-      const after = applyGuess(game, author.id, correct, Date.now());
-      if (after === game) return;
-      saveGame(after);
-      setGame(after);
-      if (after.status === "playing") {
-        setShake((s) => s + 1);
-      } else {
-        if (!unlimited) recordResult(toHistoryEntry(after));
-        topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        void finish(after, puzzle, authors);
-      }
-      bumpStorage();
+      advance(applyGuess(game, author.id, correct, Date.now()));
     } finally {
       setChecking(false);
     }
   }
 
+  function onSkip() {
+    setConfirmSkip(false);
+    if (!game || checking || game.status !== "playing") return;
+    advance(applySkip(game));
+  }
+
+  /** Shared by guesses and skips: a skip is a wrong guess in every respect. */
+  function advance(after: GameState) {
+    if (!game || after === game) return;
+    setGame(after);
+    if (after.status === "playing") setShake((s) => s + 1);
+    else topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    if (review) {
+      // In memory only: nothing saved, recorded or submitted.
+      if (after.status !== "playing" && reviewData) {
+        setOutcome({ answer: reviewData.answer, stats: null });
+        setTweetUrls(reviewData.tweetUrls);
+      }
+      return;
+    }
+    saveGame(after);
+    if (after.status !== "playing") {
+      if (!unlimited) recordResult(toHistoryEntry(after));
+      void finish(after, puzzle, authors);
+    }
+    bumpStorage();
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-5">
       <div ref={topRef} className="flex scroll-mt-20 items-center justify-between gap-3">
-        <span className="label">{unlimited ? "Unlimited" : `No. ${puzzle.number}`}</span>
+        <span className="label">
+          {review ? (
+            <>
+              <Link href="/review" className="link">Review</Link> · No. {puzzle.number} of {reviewData?.total}
+            </>
+          ) : unlimited ? (
+            "Unlimited"
+          ) : (
+            `No. ${puzzle.number}`
+          )}
+        </span>
         <GuessPips game={game} />
       </div>
 
       {finished ? (
-        <ResultPanel game={game} outcome={outcome} onNext={unlimited ? next : undefined} />
+        <>
+          <ResultPanel
+            game={game}
+            outcome={outcome}
+            onNext={unlimited ? next : undefined}
+            review={review && reviewData ? { next: reviewData.next } : undefined}
+          />
+          {review && reviewData && <ReviewRater data={reviewData} game={game} />}
+        </>
       ) : (
         <div>
           <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight">Who tweeted this?</h1>
@@ -276,7 +341,7 @@ export function Game({ mode = "daily" }: { mode?: "daily" | "unlimited" }) {
         {puzzle.tweets.slice(0, visible).map((tweet, i) => (
           <TweetCard
             key={i}
-            tweet={tweet}
+            tweet={review && finished && reviewData ? { ...tweet, text: reviewData.fullTexts[i] } : tweet}
             index={i}
             url={finished ? tweetUrls[i] : undefined}
             animate={!finished && i >= initialVisible}
@@ -298,8 +363,37 @@ export function Game({ mode = "daily" }: { mode?: "daily" | "unlimited" }) {
               authors={authors}
               excludeIds={game.guesses}
               disabled={checking}
-              onGuess={onGuess}
+              onGuess={(a) => {
+                setConfirmSkip(false);
+                void onGuess(a);
+              }}
             />
+          </div>
+          <div className="mt-2 flex min-h-7 items-center justify-center gap-3 text-sm">
+            {confirmSkip ? (
+              <>
+                <span className="text-muted">
+                  {game.guesses.length + 1 >= MAX_GUESSES
+                    ? "This is your last guess. Skip and give up?"
+                    : "Skip? It uses up one of your 5 guesses."}
+                </span>
+                <button type="button" className="link font-semibold text-bad" onClick={onSkip} autoFocus>
+                  {game.guesses.length + 1 >= MAX_GUESSES ? "Give up" : "Yes, skip"}
+                </button>
+                <button type="button" className="link" onClick={() => setConfirmSkip(false)}>
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="link text-muted"
+                disabled={checking}
+                onClick={() => setConfirmSkip(true)}
+              >
+                {game.guesses.length + 1 >= MAX_GUESSES ? "Give up" : "Skip to the next tweet"}
+              </button>
+            )}
           </div>
           <p className="sr-only" aria-live="assertive">
             {shake > 0 ? `Wrong. ${wrongIds.length} of ${MAX_GUESSES} guesses used. New tweet revealed.` : ""}

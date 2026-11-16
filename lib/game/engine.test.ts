@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { HINT_SCHEDULE } from "../constants";
 import {
   applyGuess,
+  applySkip,
   hintsUnlocked,
   newGame,
   toHistoryEntry,
@@ -111,5 +112,29 @@ describe("engine", () => {
     expect(tweetsVisible(reloaded)).toBe(3);
     const done = applyGuess(reloaded, ANSWER, true, 5000);
     expect(toHistoryEntry(done).score).toBe(60);
+  });
+});
+
+describe("applySkip", () => {
+  it("counts exactly like a wrong guess", () => {
+    let s = newGame(7, 1000);
+    s = applySkip(s, 2000);
+    expect(s.guesses).toEqual(["skip:1"]);
+    expect(wrongGuessCount(s)).toBe(1);
+    expect(tweetsVisible(s)).toBe(2);
+    expect(hintsUnlocked(s)).toEqual(HINT_SCHEDULE.slice(0, 1));
+    s = applyGuess(s, "wrong-0", false, 2500);
+    s = applySkip(s, 3000);
+    expect(s.guesses).toEqual(["skip:1", "wrong-0", "skip:2"]);
+    s = applyGuess(s, ANSWER, true, 4000);
+    expect(toHistoryEntry(s)).toMatchObject({ solved: true, guessesUsed: 4, score: scoreFor(4, true) });
+  });
+
+  it("loses the game when used as the fifth guess", () => {
+    let s = newGame(7, 1000);
+    for (let i = 0; i < 5; i++) s = applySkip(s, 2000 + i);
+    expect(s.status).toBe("lost");
+    expect(s.guesses).toHaveLength(5);
+    expect(applySkip(s, 9000)).toBe(s);
   });
 });

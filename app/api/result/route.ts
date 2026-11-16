@@ -50,7 +50,8 @@ export function POST(request: Request) {
     if (!answer) throw new Error(`puzzle ${puzzleNumber} references unknown author`);
 
     const known = new Set(authors.map((a) => a.id));
-    if (!guesses.every((g) => known.has(g))) return error("Invalid result: unknown guess.", 400);
+    // Skips ("skip:1"...) count as wrong guesses; they can never match the answer.
+    if (!guesses.every((g) => known.has(g) || /^skip:[1-5]$/.test(g))) return error("Invalid result: unknown guess.", 400);
 
     // Solved only if the LAST guess is the answer (guesses are unique, so no earlier one is).
     const hitAt = guesses.indexOf(puzzle.authorId);

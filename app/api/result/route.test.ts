@@ -45,6 +45,16 @@ describe("POST /api/result", () => {
     expect([fifth.solved, fifth.score]).toEqual([true, 20]);
   });
 
+  it("treats skips as wrong guesses", async () => {
+    const win = (await (
+      await submit(payload({ guesses: ["skip:1", WRONG[0], "skip:2", ANSWER], deviceId: "s1" }))
+    ).json()) as ResultResponse;
+    expect([win.solved, win.score]).toEqual([true, 40]);
+    const loss = await submit(payload({ guesses: ["skip:1", "skip:2", "skip:3", "skip:4", "skip:5"], deviceId: "s2" }));
+    expect(((await loss.json()) as ResultResponse).solved).toBe(false);
+    expect((await submit(payload({ guesses: ["skip:9", ANSWER], deviceId: "s3" }))).status).toBe(400);
+  });
+
   it("accepts a valid loss", async () => {
     const res = await submit(payload({ guesses: WRONG }));
     expect(res.status).toBe(200);

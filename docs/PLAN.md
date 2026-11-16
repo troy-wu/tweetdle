@@ -115,4 +115,6 @@ Each workstream owns its own folders, so B–E can run in parallel after A. Ever
 
 ## Later (not in this build)
 
+See `docs/IDEAS.md` for the open theming question (AI, NBA, an easy "anyone can get it" pool).
+
 Archive of past puzzles, themed packs (music week, sports week), friend leagues, streamer mode with hidden answer overlay, ads/Pro hosting, user-submitted tweets with moderation.

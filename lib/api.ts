@@ -43,3 +43,32 @@ export const getLeaderboard = (kind: LeaderboardKind, puzzleNumber: number) =>
   request<LeaderboardRow[]>(`/api/leaderboard?kind=${kind}&n=${puzzleNumber}`);
 export const syncHistory = (history: HistoryEntry[]) =>
   request<SyncResponse>(`/api/sync`, json({ history }));
+
+/* Review mode (local dev only, see lib/server/review.ts). */
+export type ReviewVerdict = "keep" | "maybe" | "cut";
+export interface ReviewRating {
+  verdict: ReviewVerdict;
+  note: string;
+  solved: boolean;
+  guessesUsed: number;
+  ratedAt: string;
+}
+export interface ReviewListItem {
+  number: number;
+  category: Author["category"];
+  rating: ReviewRating | null;
+}
+export interface ReviewPuzzle {
+  puzzle: PublicPuzzle;
+  answer: Author;
+  tweetUrls: string[];
+  fullTexts: string[];
+  rating: ReviewRating | null;
+  prev: number | null;
+  next: number | null;
+  total: number;
+}
+export const getReviewList = () => request<ReviewListItem[]>(`/api/review`);
+export const getReviewPuzzle = (n: number) => request<ReviewPuzzle>(`/api/review/${n}`);
+export const saveReviewRating = (n: number, rating: Omit<ReviewRating, "ratedAt">) =>
+  request<ReviewRating>(`/api/review`, json({ number: n, ...rating }));

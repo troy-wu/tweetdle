@@ -26,6 +26,13 @@ export const SITE_NAME = "Tweetdle";
  * They are never a daily puzzle and never count for streaks or leaderboards.
  */
 export const PRACTICE_BASE = 100_000;
+
+/**
+ * A skip is stored as a guess with this prefix ("skip:1", "skip:2"...), so it
+ * counts exactly like a wrong guess everywhere (score, hints, share, server check).
+ */
+export const SKIP_PREFIX = "skip:";
+export const isSkip = (guess: string) => guess.startsWith(SKIP_PREFIX);
 export const isPracticeNumber = (n: number) => n > PRACTICE_BASE;
 
 export const STORAGE_KEY = "tweetdle:v1";

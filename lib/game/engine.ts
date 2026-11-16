@@ -1,4 +1,4 @@
-import { HINT_SCHEDULE, MAX_GUESSES, TWEETS_PER_PUZZLE, type HintKind } from "../constants";
+import { HINT_SCHEDULE, MAX_GUESSES, SKIP_PREFIX, TWEETS_PER_PUZZLE, type HintKind } from "../constants";
 import type { GameState, HistoryEntry } from "../types";
 import { scoreFor } from "./score";
 
@@ -24,6 +24,12 @@ export function applyGuess(
   if (isCorrect) return { ...state, guesses, status: "won", finishedAt: now };
   if (guesses.length >= MAX_GUESSES) return { ...state, guesses, status: "lost", finishedAt: now };
   return { ...state, guesses };
+}
+
+/** Skips the current tweet: uses up a guess exactly like a wrong one. */
+export function applySkip(state: GameState, now: number = Date.now()): GameState {
+  const skips = state.guesses.filter((g) => g.startsWith(SKIP_PREFIX)).length;
+  return applyGuess(state, `${SKIP_PREFIX}${skips + 1}`, false, now);
 }
 
 export function wrongGuessCount(state: GameState): number {

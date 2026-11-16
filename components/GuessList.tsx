@@ -1,3 +1,4 @@
+import { isSkip } from "@/lib/constants";
 import type { Author } from "@/lib/types";
 
 /** Names the player has already guessed wrong. */
@@ -8,9 +9,15 @@ export function GuessList({ ids, authors }: { ids: string[]; authors: Author[] }
       <span className="label">Not</span>
       <ul className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Wrong guesses">
         {ids.map((id) => (
-          <li key={id} className="animate-pop font-medium text-bad line-through decoration-1">
-            {authors.find((a) => a.id === id)?.name ?? id}
-          </li>
+          isSkip(id) ? (
+            <li key={id} className="animate-pop font-medium text-muted">
+              Skipped
+            </li>
+          ) : (
+            <li key={id} className="animate-pop font-medium text-bad line-through decoration-1">
+              {authors.find((a) => a.id === id)?.name ?? id}
+            </li>
+          )
         ))}
       </ul>
     </div>

@@ -27,12 +27,15 @@ export function ResultPanel({
   game,
   outcome,
   onNext,
+  review,
 }: {
   game: GameState;
   /** null while the server is being asked. */
   outcome: Outcome | null;
   /** Unlimited mode: move on to another puzzle. Leaves out everything daily. */
   onNext?: () => void;
+  /** Review mode: links to the next puzzle and the review list instead of anything daily. */
+  review?: { next: number | null };
 }) {
   const { open } = useModals();
   const { user, loading } = useUser();
@@ -46,7 +49,7 @@ export function ResultPanel({
   const figures = [
     { label: "Guesses", value: won ? `${entry.guessesUsed}/${MAX_GUESSES}` : `X/${MAX_GUESSES}` },
     { label: "Score", value: String(entry.score) },
-    ...(onNext ? [] : [{ label: "Streak", value: String(streak) }]),
+    ...(onNext || review ? [] : [{ label: "Streak", value: String(streak) }]),
   ];
 
   return (
@@ -76,7 +79,18 @@ export function ResultPanel({
         ))}
       </dl>
 
-      {onNext ? (
+      {review ? (
+        <p className="flex justify-center gap-5 text-sm">
+          <Link href="/review" className="link">
+            All puzzles
+          </Link>
+          {review.next !== null && (
+            <Link href={`/review/${review.next}`} className="link">
+              Skip to No. {review.next}
+            </Link>
+          )}
+        </p>
+      ) : onNext ? (
         <>
           <button type="button" className="btn btn-accent btn-xl w-full" onClick={onNext}>
             Next author
