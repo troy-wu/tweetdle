@@ -56,19 +56,10 @@ describe("GET /api/puzzle/[n]", () => {
     expect(await res.json()).toEqual({ error: expect.any(String) });
   });
 
-  it("refuses future puzzles even when they exist", async () => {
-    expect((await get("2")).status).toBe(200); // today in UTC+14
-    const res = await get("3"); // exists in the fixtures, but is tomorrow's
-    expect(res.status).toBe(404);
-    expect(res.headers.get("cache-control")).toBe("no-store");
+  it("serves any puzzle in the bank (unlimited mode) without the answer", async () => {
+    const res = await get("3"); // tomorrow's daily: unlimited mode may draw it
+    expect(res.status).toBe(200);
     expect(JSON.stringify(await res.json())).not.toContain("senator");
-  });
-
-  it("opens the next puzzle once the date reaches it somewhere on Earth", async () => {
-    setupMemoryBackend("2026-11-16T10:00:00Z"); // Nov 17 00:00 in UTC+14
-    expect((await get("3")).status).toBe(200);
-    setupMemoryBackend("2026-11-16T09:59:59Z");
-    expect((await get("3")).status).toBe(404);
   });
 
   it("returns 404 for a valid number with no puzzle", async () => {

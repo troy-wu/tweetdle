@@ -110,6 +110,11 @@ export interface ResultPayload {
   durationMs: number;
   /** Random id generated once per browser. */
   deviceId: string;
+  /**
+   * Unlimited and archive games: the server checks the guesses and reveals the
+   * answer but records nothing (no stats, streak or leaderboard).
+   */
+  casual?: boolean;
 }
 
 export interface DailyStats {

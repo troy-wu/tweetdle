@@ -144,3 +144,22 @@ describe("POST /api/result", () => {
     expect((await submit(payload({ deviceId: "other" }), { "x-forwarded-for": "198.51.100.1" })).status).toBe(200);
   });
 });
+
+describe("POST /api/result (casual: unlimited and archive games)", () => {
+  beforeEach(() => setupMemoryBackend("2026-11-15T12:00:00Z"));
+  afterEach(() => teardownMemoryBackend());
+
+  it("reveals the answer of any puzzle but records nothing", async () => {
+    const res = await submit(payload({ puzzleNumber: 3, guesses: ["senator-sample"], casual: true }));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as ResultResponse;
+    expect(body.solved).toBe(true);
+    expect(body.answer.id).toBe("senator-sample");
+    expect(body.stats.plays).toBe(0);
+  });
+
+  it("still validates the guesses", async () => {
+    const res = await submit(payload({ puzzleNumber: 3, guesses: ["zed-zero"], casual: true }));
+    expect(res.status).toBe(400);
+  });
+});

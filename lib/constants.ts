@@ -16,7 +16,7 @@ export const HINT_SCHEDULE = ["category", "descriptor", "initials"] as const;
 export type HintKind = (typeof HINT_SCHEDULE)[number];
 
 /** Puzzle #1 is played on this local date (YYYY-MM-DD). */
-export const LAUNCH_DATE = process.env.NEXT_PUBLIC_LAUNCH_DATE || "2026-11-15";
+export const LAUNCH_DATE = process.env.NEXT_PUBLIC_LAUNCH_DATE || "2026-11-16";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 export const SITE_NAME = "Tweetdle";

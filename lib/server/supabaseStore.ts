@@ -4,7 +4,6 @@
  * tables and functions this talks to.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { PRACTICE_BASE } from "@/lib/constants";
 import type { Author, DailyStats, HistoryEntry, Puzzle } from "@/lib/types";
 import type { LeaderboardEntry, Store } from "./store";
 
@@ -65,11 +64,11 @@ export function createSupabaseStore(db: SupabaseClient): Store {
       return value;
     },
 
-    async getPracticeNumbers() {
+    async getPuzzleNumbers() {
       if (practiceCache && Date.now() - practiceCache.at < CONTENT_TTL_MS) return practiceCache.value;
       const rows = check(
-        "practice numbers",
-        await db.from("puzzles").select("number").gt("number", PRACTICE_BASE).order("number").limit(5000),
+        "puzzle numbers",
+        await db.from("puzzles").select("number").order("number").limit(10000),
       ) as { number: number }[] | null;
       const value = (rows ?? []).map((r) => r.number);
       practiceCache = { at: Date.now(), value };

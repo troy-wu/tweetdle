@@ -1,11 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MAX_GUESSES, isPracticeNumber } from "@/lib/constants";
+import { MAX_GUESSES } from "@/lib/constants";
 import {
   type ReviewPuzzle,
   getAuthors,
-  getPracticeNumbers,
+  getPuzzleNumbers,
   getPuzzle,
   getReviewPuzzle,
   getStats,
@@ -14,6 +14,7 @@ import {
 import {
   applyGuess,
   applySkip,
+  dateForPuzzleNumber,
   deleteGames,
   findAnswerId,
   getDeviceId,
@@ -22,6 +23,7 @@ import {
   isCorrectGuess,
   listGames,
   newGame,
+  pickUnlimited,
   puzzleNumberForDate,
   recordResult,
   saveGame,
@@ -43,8 +45,6 @@ type Load =
   | { phase: "loading" }
   | { phase: "error" }
   | { phase: "none" }
-  /** Unlimited mode: every puzzle in the pool has been played. */
-  | { phase: "exhausted" }
   | {
       phase: "ready";
       puzzle: PublicPuzzle;
@@ -53,44 +53,68 @@ type Load =
       initialVisible: number;
     };
 
-/* The server's reply is kept so a reload shows the result without a second submit. */
-const resultKey = (n: number) => `tweetdle:result:${n}`;
+/*
+ * The server's reply is kept so a reload shows the result without a second submit.
+ * Casual (unlimited/archive) replies are kept apart, so playing a puzzle early in
+ * unlimited mode can never stand in for that day's real submission.
+ */
+const resultKey = (n: number, casual: boolean) => `tweetdle:result:${casual ? "c:" : ""}${n}`;
 
-function readCachedResult(n: number): ResultResponse | null {
+function readCachedResult(n: number, casual: boolean): ResultResponse | null {
   try {
-    const raw = window.localStorage.getItem(resultKey(n));
+    const raw = window.localStorage.getItem(resultKey(n, casual));
     return raw ? (JSON.parse(raw) as ResultResponse) : null;
   } catch {
     return null;
   }
 }
 
-function cacheResult(n: number, result: ResultResponse) {
+function cacheResult(n: number, casual: boolean, result: ResultResponse) {
   try {
-    window.localStorage.setItem(resultKey(n), JSON.stringify(result));
+    window.localStorage.setItem(resultKey(n, casual), JSON.stringify(result));
   } catch {}
 }
 
-/** Unlimited mode: the unfinished puzzle if there is one, else a random unplayed one. */
-async function pickPracticeNumber(): Promise<number | null> {
-  const pool = await getPracticeNumbers();
-  const games = listGames(isPracticeNumber).filter((g) => pool.includes(g.puzzleNumber));
+const dayFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+/**
+ * Unlimited mode: the unfinished puzzle if there is one, else another from the
+ * whole bank. When everything has been played the record is cleared and it
+ * starts over, so it never runs out. null only if the bank is empty.
+ */
+async function pickUnlimitedNumber(): Promise<number | null> {
+  const pool = await getPuzzleNumbers();
+  const today = puzzleNumberForDate(new Date());
+  const games = listGames("free").filter((g) => pool.includes(g.puzzleNumber));
   const unfinished = games.find((g) => g.status === "playing");
   if (unfinished) return unfinished.puzzleNumber;
-  const played = new Set(games.map((g) => g.puzzleNumber));
-  const fresh = pool.filter((n) => !played.has(n));
-  return fresh.length ? fresh[Math.floor(Math.random() * fresh.length)] : null;
+  // Skip what was already played here, or as a daily or archive puzzle.
+  const played = new Set(
+    [...games, ...listGames("daily").filter((g) => g.status !== "playing")].map((g) => g.puzzleNumber),
+  );
+  const fresh = pickUnlimited(pool, played, today);
+  if (fresh !== null) return fresh;
+  const last = games.reduce<GameState | null>((a, g) => (!a || (g.finishedAt ?? 0) > (a.finishedAt ?? 0) ? g : a), null);
+  deleteGames("free");
+  return pickUnlimited(pool, new Set(last ? [last.puzzleNumber] : []), today);
 }
 
 export function Game({
   mode = "daily",
   reviewNumber,
+  archiveNumber,
 }: {
-  mode?: "daily" | "unlimited" | "review";
+  mode?: "daily" | "unlimited" | "archive" | "review";
   /** Review mode only: the puzzle to play. */
   reviewNumber?: number;
+  /** Archive mode only: the past daily puzzle to play. */
+  archiveNumber?: number;
 }) {
   const unlimited = mode === "unlimited";
+  const archive = mode === "archive";
+  /** Unlimited and archive games are for fun: no history, streak, stats or leaderboard. */
+  const casual = unlimited || archive;
+  const slot = unlimited ? "free" : "daily";
   /** Review mode plays any puzzle in memory only: nothing is saved, submitted or counted. */
   const review = mode === "review";
   const [reviewData, setReviewData] = useState<ReviewPuzzle | null>(null);
@@ -108,12 +132,12 @@ export function Game({
   /** Ask the server for the reveal; fall back to what the browser can work out. */
   const finish = useCallback(async (state: GameState, puzzle: PublicPuzzle, authors: Author[]) => {
     const n = state.puzzleNumber;
-    const cached = readCachedResult(n);
+    const cached = readCachedResult(n, casual);
     if (cached) {
       setOutcome({ answer: cached.answer, stats: cached.stats });
       setTweetUrls(cached.tweetUrls);
       // Refresh the global numbers; the cached ones are fine if this fails.
-      if (!isPracticeNumber(n)) getStats(n)
+      if (!unlimited) getStats(n)
         .then((stats) => setOutcome({ answer: cached.answer, stats }))
         .catch(() => {});
       return;
@@ -124,8 +148,9 @@ export function Game({
         guesses: state.guesses,
         durationMs: Math.max(0, (state.finishedAt ?? Date.now()) - state.startedAt),
         deviceId: getDeviceId(),
+        ...(casual ? { casual: true } : {}),
       });
-      cacheResult(n, result);
+      cacheResult(n, casual, result);
       setOutcome({ answer: result.answer, stats: result.stats });
       setTweetUrls(result.tweetUrls);
     } catch {
@@ -134,14 +159,14 @@ export function Game({
         getStats(n).catch(() => null),
       ]);
       // The server never counted this game, so add it to the bars ourselves.
-      if (stats) {
+      if (stats && !casual) {
         const bucket = state.status === "won" ? state.guesses.length - 1 : MAX_GUESSES;
         stats.distribution[bucket] += 1;
         stats.plays += 1;
       }
       setOutcome({ answer: authors.find((a) => a.id === answerId) ?? null, stats });
     }
-  }, []);
+  }, [casual, unlimited]);
 
   useEffect(() => {
     let cancelled = false;
@@ -155,21 +180,19 @@ export function Game({
           setLoad({ phase: "ready", puzzle: data.puzzle, authors, initialVisible: 1 });
           return;
         }
-        const n = unlimited ? await pickPracticeNumber() : puzzleNumberForDate(new Date());
+        const today = puzzleNumberForDate(new Date());
+        const n = unlimited ? await pickUnlimitedNumber() : archive ? (archiveNumber ?? 0) : today;
         if (cancelled) return;
-        if (n === null) {
-          setLoad({ phase: "exhausted" });
-          return;
-        }
-        if (n < 1) throw new Error("not found");
+        // The archive only holds days that are over; today's puzzle is played on the main page.
+        if (n === null || n < 1 || (archive && n >= today)) throw new Error("not found");
         const [puzzle, authors] = await Promise.all([getPuzzle(n), getAuthors()]);
         if (cancelled) return;
-        const saved = getGame(n) ?? newGame(n, Date.now());
+        const saved = getGame(n, slot) ?? newGame(n, Date.now());
         setGame(saved);
         setLoad({ phase: "ready", puzzle, authors, initialVisible: tweetsVisible(saved) });
         if (saved.status !== "playing") {
           // Covers a tab closed between the last guess and the history write.
-          if (!unlimited) {
+          if (!casual) {
             recordResult(toHistoryEntry(saved));
             bumpStorage();
           }
@@ -185,7 +208,7 @@ export function Game({
     return () => {
       cancelled = true;
     };
-  }, [attempt, finish, unlimited, review, reviewNumber]);
+  }, [attempt, finish, unlimited, archive, archiveNumber, casual, slot, review, reviewNumber]);
 
   // Bring the newest tweet into view after a wrong guess.
   const wrongCount = game && game.status === "playing" ? game.guesses.length : 0;
@@ -222,34 +245,22 @@ export function Game({
     setAttempt((a) => a + 1);
   }
 
-  if (load.phase === "exhausted") {
-    return (
-      <Notice title="That is all of them" body="You have played every unlimited puzzle. More are added over time.">
-        <Link href="/play" className="btn btn-accent">
-          Today&apos;s puzzle
-        </Link>
-        <button
-          type="button"
-          className="link text-sm"
-          onClick={() => {
-            deleteGames(isPracticeNumber);
-            next();
-          }}
-        >
-          Play them again
-        </button>
-      </Notice>
-    );
-  }
-
   if (load.phase === "none" || !game) {
     return (
-      <Notice title="No puzzle today" body="This one is not ready yet. Come back tomorrow.">
-        <Countdown />
-        <Link href="/" className="btn">
-          Back home
-        </Link>
-      </Notice>
+      archive ? (
+        <Notice title="Not in the archive" body="A puzzle joins the archive the day after it runs.">
+          <Link href="/archive" className="btn">
+            Previous puzzles
+          </Link>
+        </Notice>
+      ) : (
+        <Notice title="No puzzle today" body="This one is not ready yet. Come back tomorrow.">
+          <Countdown />
+          <Link href="/" className="btn">
+            Back home
+          </Link>
+        </Notice>
+      )
     );
   }
 
@@ -291,9 +302,9 @@ export function Game({
       }
       return;
     }
-    saveGame(after);
+    saveGame(after, slot);
     if (after.status !== "playing") {
-      if (!unlimited) recordResult(toHistoryEntry(after));
+      if (!casual) recordResult(toHistoryEntry(after));
       void finish(after, puzzle, authors);
     }
     bumpStorage();
@@ -309,6 +320,11 @@ export function Game({
             </>
           ) : unlimited ? (
             "Unlimited"
+          ) : archive ? (
+            <>
+              <Link href="/archive" className="link">Previous</Link> · No. {puzzle.number} ·{" "}
+              {dayFormat.format(dateForPuzzleNumber(puzzle.number))}
+            </>
           ) : (
             `No. ${puzzle.number}`
           )}
@@ -322,6 +338,7 @@ export function Game({
             game={game}
             outcome={outcome}
             onNext={unlimited ? next : undefined}
+            archive={archive}
             review={review && reviewData ? { next: reviewData.next } : undefined}
           />
           {review && reviewData && <ReviewRater data={reviewData} game={game} />}

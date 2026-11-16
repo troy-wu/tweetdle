@@ -9,7 +9,6 @@ import path from "node:path";
 import fixtureAuthors from "@/content/fixtures/authors.json";
 import fixturePuzzles from "@/content/fixtures/puzzles.json";
 import { getAdminClient } from "@/lib/supabase/admin";
-import { isPracticeNumber } from "@/lib/constants";
 import type { Author, DailyStats, HistoryEntry, LeaderboardKind, Puzzle } from "@/lib/types";
 import { bucketToOutcome, outcomeToBucket } from "./puzzle";
 import { createSupabaseStore } from "./supabaseStore";
@@ -43,8 +42,8 @@ export interface Store {
   readonly kind: "memory" | "supabase";
   getAuthors(): Promise<Author[]>;
   getPuzzle(n: number): Promise<Puzzle | null>;
-  /** Numbers of the unlimited-mode puzzles (see PRACTICE_BASE), ascending. */
-  getPracticeNumbers(): Promise<number[]>;
+  /** Every puzzle number in the bank, ascending. */
+  getPuzzleNumbers(): Promise<number[]>;
   getStats(n: number): Promise<DailyStats>;
   /**
    * Atomically: count the play in the day's distribution once per device, and
@@ -119,8 +118,8 @@ export function createMemoryStore(content: MemoryContent = loadLocalContent()): 
     async getPuzzle(n) {
       return puzzles.get(n) ?? null;
     },
-    async getPracticeNumbers() {
-      return [...puzzles.keys()].filter(isPracticeNumber).sort((a, b) => a - b);
+    async getPuzzleNumbers() {
+      return [...puzzles.keys()].sort((a, b) => a - b);
     },
     async getStats(n) {
       return copy(stats.get(n) ?? emptyStats(n));

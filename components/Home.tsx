@@ -34,9 +34,12 @@ export function Home() {
         <Link href="/play" className="btn btn-accent btn-xl w-full">
           {done ? "See today\u2019s result" : inProgress ? "Continue" : "Play"}
         </Link>
-        <p className="flex justify-center gap-5 text-sm">
+        <p className="flex justify-center gap-4 whitespace-nowrap text-sm">
           <Link href="/leaderboard" className="link">
             Leaderboard
+          </Link>
+          <Link href="/archive" className="link">
+            Previous
           </Link>
           <button type="button" className="link" onClick={() => open("help")}>
             How to play

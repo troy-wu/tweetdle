@@ -146,6 +146,7 @@
   {"id":"camila-cabello","name":"Camila Cabello","aliases":["Camila_Cabello","Camila"],"category":"Music","descriptor":"Cuban-American pop singer","initials":"C.C."},
   {"id":"sam-smith","name":"Sam Smith","aliases":["samsmith"],"category":"Music","descriptor":"English singer","initials":"S.S."},
   {"id":"lewis-capaldi","name":"Lewis Capaldi","aliases":["LewisCapaldi"],"category":"Music","descriptor":"Scottish singer-songwriter","initials":"L.C."},
+  {"id":"james-blunt","name":"James Blunt","aliases":["JamesBlunt"],"category":"Music","descriptor":"English singer-songwriter","initials":"J.B."},
   {"id":"josh-groban","name":"Josh Groban","aliases":["joshgroban"],"category":"Music","descriptor":"American singer","initials":"J.G."},
   {"id":"kid-cudi","name":"Kid Cudi","aliases":["KidCudi","Scott Mescudi"],"category":"Music","descriptor":"American rapper","initials":"K.C."},
   {"id":"meek-mill","name":"Meek Mill","aliases":["MeekMill"],"category":"Music","descriptor":"American rapper from Philadelphia","initials":"M.M."},

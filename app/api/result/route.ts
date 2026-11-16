@@ -19,6 +19,7 @@ const payloadSchema = z.object({
     .refine((g) => new Set(g).size === g.length, "Guesses must be unique."),
   durationMs: z.number().finite().min(0).max(MAX_DURATION_MS),
   deviceId: z.string().min(1).max(64),
+  casual: z.boolean().optional(),
 });
 
 /**
@@ -40,8 +41,9 @@ export function POST(request: Request) {
     if (!parsed.success) return error(`Invalid result: ${parsed.error.issues[0]?.message ?? "bad payload"}`, 400);
     const { puzzleNumber, guesses, durationMs, deviceId } = parsed.data;
 
-    const practice = isPracticeNumber(puzzleNumber);
-    if (!practice && puzzleNumber > maxValidPuzzleNumber()) return error("That puzzle is not available yet.", 400);
+    // Unlimited and archive games: checked and revealed, never recorded.
+    const casual = parsed.data.casual === true || isPracticeNumber(puzzleNumber);
+    if (!casual && puzzleNumber > maxValidPuzzleNumber()) return error("That puzzle is not available yet.", 400);
 
     const store = getStore();
     const [puzzle, authors] = await Promise.all([store.getPuzzle(puzzleNumber), store.getAuthors()]);
@@ -65,8 +67,14 @@ export function POST(request: Request) {
       return error("Invalid result: guesses continue after the correct answer.", 400);
     }
 
-    // Unlimited-mode games are counted per device but never reach a leaderboard.
-    const user = practice ? null : await getRequestUser();
+    if (casual) {
+      const { solved, score } = bucketToOutcome(bucket);
+      const stats = await store.getStats(puzzleNumber);
+      const response: ResultResponse = { solved, score, answer, tweetUrls: puzzle.tweets.map((t) => t.url), stats };
+      return json(response);
+    }
+
+    const user = await getRequestUser();
     const recorded = await store.submitPlay({
       puzzleNumber,
       deviceHash: hashDeviceId(deviceId),

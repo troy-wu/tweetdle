@@ -33,7 +33,8 @@ const json = (body: unknown): RequestInit => ({
 });
 
 export const getPuzzle = (n: number) => request<PublicPuzzle>(`/api/puzzle/${n}`);
-export const getPracticeNumbers = () =>
+/** Every puzzle number in the bank (daily and unlimited-only). */
+export const getPuzzleNumbers = () =>
   request<{ numbers: number[] }>(`/api/practice`).then((r) => r.numbers);
 export const getAuthors = () => request<Author[]>(`/api/authors`);
 export const submitResult = (payload: ResultPayload) =>

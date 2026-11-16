@@ -6,5 +6,7 @@ export default defineConfig({
   test: {
     include: ["lib/**/*.test.ts", "app/**/*.test.ts", "scripts/**/*.test.ts"],
     environment: "node",
+    // Tests are written against this launch day, whatever the real one is.
+    env: { NEXT_PUBLIC_LAUNCH_DATE: "2026-11-15" },
   },
 });

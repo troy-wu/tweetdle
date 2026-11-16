@@ -28,6 +28,7 @@ export function ResultPanel({
   outcome,
   onNext,
   review,
+  archive,
 }: {
   game: GameState;
   /** null while the server is being asked. */
@@ -36,6 +37,8 @@ export function ResultPanel({
   onNext?: () => void;
   /** Review mode: links to the next puzzle and the review list instead of anything daily. */
   review?: { next: number | null };
+  /** Archive mode: a past daily puzzle, played for fun. */
+  archive?: boolean;
 }) {
   const { open } = useModals();
   const { user, loading } = useUser();
@@ -49,7 +52,7 @@ export function ResultPanel({
   const figures = [
     { label: "Guesses", value: won ? `${entry.guessesUsed}/${MAX_GUESSES}` : `X/${MAX_GUESSES}` },
     { label: "Score", value: String(entry.score) },
-    ...(onNext || review ? [] : [{ label: "Streak", value: String(streak) }]),
+    ...(onNext || review || archive ? [] : [{ label: "Streak", value: String(streak) }]),
   ];
 
   return (
@@ -103,7 +106,7 @@ export function ResultPanel({
         </>
       ) : (
         <>
-          <ShareButton text={shareText(entry, streak, SITE_URL)} />
+          {!archive && <ShareButton text={shareText(entry, streak, SITE_URL)} />}
 
           <div>
             <h2 className="label mb-2">How everyone did</h2>
@@ -113,7 +116,7 @@ export function ResultPanel({
                 <p className="mt-3 text-center text-sm font-medium">
                   {beat !== null
                     ? `You beat ${beat}% of players`
-                    : `${global.plays} ${global.plays === 1 ? "player" : "players"} so far today`}
+                    : `${global.plays} ${global.plays === 1 ? "player" : "players"} ${archive ? "on the day" : "so far today"}`}
                 </p>
               </>
             ) : outcome ? (
@@ -123,14 +126,17 @@ export function ResultPanel({
             )}
           </div>
 
-          <Countdown />
+          {!archive && <Countdown />}
 
           <p className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
-            {authEnabled && !loading && !user && (
+            {!archive && authEnabled && !loading && !user && (
               <button type="button" className="link" onClick={() => open("account")}>
                 Sign in to save your streak
               </button>
             )}
+            <Link href="/archive" className="link">
+              Previous puzzles
+            </Link>
             <Link href="/unlimited" className="link">
               Keep playing
             </Link>

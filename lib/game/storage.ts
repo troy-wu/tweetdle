@@ -180,27 +180,39 @@ export function getDeviceId(): string {
   return id;
 }
 
-export function getGame(puzzleNumber: number): GameState | null {
-  const g = load().games[String(puzzleNumber)];
+/**
+ * Games are kept in two slots so they never collide: "daily" holds each day's
+ * puzzle (and archive replays of it), "free" holds unlimited-mode games, which
+ * can use the same puzzle numbers.
+ */
+export type GameSlot = "daily" | "free";
+const FREE_PREFIX = "u:";
+const gameKey = (puzzleNumber: number, slot: GameSlot) =>
+  slot === "free" ? `${FREE_PREFIX}${puzzleNumber}` : String(puzzleNumber);
+
+export function getGame(puzzleNumber: number, slot: GameSlot = "daily"): GameState | null {
+  const g = load().games[gameKey(puzzleNumber, slot)];
   return g && g.puzzleNumber === puzzleNumber ? g : null;
 }
 
-/** Every saved game whose number passes the filter, e.g. the unlimited-mode ones. */
-export function listGames(filter: (puzzleNumber: number) => boolean): GameState[] {
-  return Object.values(load().games).filter((g) => filter(g.puzzleNumber));
+/** Every saved game in a slot. */
+export function listGames(slot: GameSlot = "daily"): GameState[] {
+  return Object.entries(load().games)
+    .filter(([key]) => key.startsWith(FREE_PREFIX) === (slot === "free"))
+    .map(([, g]) => g);
 }
 
-export function deleteGames(filter: (puzzleNumber: number) => boolean): void {
+export function deleteGames(slot: GameSlot): void {
   const data = load();
   for (const key of Object.keys(data.games)) {
-    if (filter(data.games[key].puzzleNumber)) delete data.games[key];
+    if (key.startsWith(FREE_PREFIX) === (slot === "free")) delete data.games[key];
   }
   save(data);
 }
 
-export function saveGame(state: GameState): void {
+export function saveGame(state: GameState, slot: GameSlot = "daily"): void {
   const data = load();
-  data.games[String(state.puzzleNumber)] = state;
+  data.games[gameKey(state.puzzleNumber, slot)] = state;
   save(data);
 }
 

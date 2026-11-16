@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { maxValidPuzzleNumber, msUntilNextPuzzle, puzzleNumberForDate } from "./puzzleNumber";
+import { dateForPuzzleNumber, maxValidPuzzleNumber, msUntilNextPuzzle, pickUnlimited, puzzleNumberForDate } from "./puzzleNumber";
 
 const LAUNCH = "2026-11-15";
 const HOUR = 3_600_000;
@@ -94,5 +94,28 @@ describe("msUntilNextPuzzle", () => {
   it("accounts for short and long DST days", () => {
     expect(msUntilNextPuzzle(new Date(2027, 2, 14, 0, 0, 0))).toBe(23 * HOUR);
     expect(msUntilNextPuzzle(new Date(2027, 10, 7, 0, 0, 0))).toBe(25 * HOUR);
+  });
+});
+
+describe("pickUnlimited", () => {
+  const pool = [1, 2, 3, 4, 5, 100001, 100002];
+  it("never serves today's puzzle or one already played", () => {
+    for (let i = 0; i < 50; i++) {
+      const n = pickUnlimited(pool, new Set([1, 100001]), 3);
+      expect([2, 100002]).toContain(n);
+    }
+  });
+  it("uses upcoming dailies only when nothing else is left, furthest first", () => {
+    expect(pickUnlimited(pool, new Set([1, 2, 100001, 100002]), 3)).toBe(5);
+    expect(pickUnlimited(pool, new Set([1, 2, 5, 100001, 100002]), 3)).toBe(4);
+  });
+  it("returns null when the bank is used up", () => {
+    expect(pickUnlimited(pool, new Set([1, 2, 4, 5, 100001, 100002]), 3)).toBeNull();
+  });
+});
+
+describe("dateForPuzzleNumber", () => {
+  it("is the inverse of puzzleNumberForDate", () => {
+    for (const n of [1, 2, 17, 400]) expect(puzzleNumberForDate(dateForPuzzleNumber(n))).toBe(n);
   });
 });
