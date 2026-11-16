@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Archive } from "@/components/Archive";
 
-export const metadata: Metadata = { title: "Previous puzzles" };
+export const metadata: Metadata = { title: "Archive" };
 
 export default function ArchivePage() {
   return <Archive />;

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MAX_GUESSES, SITE_URL } from "@/lib/constants";
 import { authEnabled, useUser } from "@/lib/auth";
 import { shareText, toHistoryEntry } from "@/lib/game";
+import { generousBeatPercent, withBaseline } from "@/lib/game/baselineStats";
 import type { Author, DailyStats, GameState } from "@/lib/types";
 import { useModals } from "./AppShell";
 import { Countdown } from "./Countdown";
@@ -13,14 +14,6 @@ import { ShareButton } from "./ShareButton";
 export interface Outcome {
   answer: Author | null;
   stats: DailyStats | null;
-}
-
-/** Share of other outcomes that were worse than the player's bucket. */
-function beatPercent(distribution: readonly number[], bucket: number): number | null {
-  const total = distribution.reduce((a, b) => a + b, 0);
-  if (total <= 1) return null;
-  const worse = distribution.slice(bucket + 1).reduce((a, b) => a + b, 0);
-  return Math.round((worse / total) * 100);
 }
 
 export function ResultPanel({
@@ -47,8 +40,8 @@ export function ResultPanel({
   const won = entry.solved;
   const bucket = won ? entry.guessesUsed - 1 : MAX_GUESSES;
   const streak = stats?.currentStreak ?? 0;
-  const global = outcome?.stats ?? null;
-  const beat = global && won ? beatPercent(global.distribution, bucket) : null;
+  const global = outcome?.stats ? withBaseline(outcome.stats) : null;
+  const beat = global && won ? generousBeatPercent(global.distribution, bucket) : null;
   const figures = [
     { label: "Guesses", value: won ? `${entry.guessesUsed}/${MAX_GUESSES}` : `X/${MAX_GUESSES}` },
     { label: "Score", value: String(entry.score) },
@@ -116,7 +109,7 @@ export function ResultPanel({
                 <p className="mt-3 text-center text-sm font-medium">
                   {beat !== null
                     ? `You beat ${beat}% of players`
-                    : `${global.plays} ${global.plays === 1 ? "player" : "players"} ${archive ? "on the day" : "so far today"}`}
+                    : `${global.plays.toLocaleString("en-US")} ${global.plays === 1 ? "player" : "players"} ${archive ? "on the day" : "so far today"}`}
                 </p>
               </>
             ) : outcome ? (
@@ -135,7 +128,7 @@ export function ResultPanel({
               </button>
             )}
             <Link href="/archive" className="link">
-              Previous puzzles
+              Archive
             </Link>
             <Link href="/unlimited" className="link">
               Keep playing

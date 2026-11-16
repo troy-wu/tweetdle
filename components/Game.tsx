@@ -250,7 +250,7 @@ export function Game({
       archive ? (
         <Notice title="Not in the archive" body="A puzzle joins the archive the day after it runs.">
           <Link href="/archive" className="btn">
-            Previous puzzles
+            Archive
           </Link>
         </Notice>
       ) : (
@@ -322,7 +322,7 @@ export function Game({
             "Unlimited"
           ) : archive ? (
             <>
-              <Link href="/archive" className="link">Previous</Link> · No. {puzzle.number} ·{" "}
+              <Link href="/archive" className="link">Archive</Link> · No. {puzzle.number} ·{" "}
               {dayFormat.format(dateForPuzzleNumber(puzzle.number))}
             </>
           ) : (

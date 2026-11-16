@@ -128,7 +128,7 @@ test("unlimited mode serves puzzles from its own pool, one after another", async
 test("previous puzzles can be played from the archive without touching today or the streak", async ({ page }) => {
   await page.clock.setFixedTime(new Date("2026-11-17T12:00:00")); // puzzle #3 is today's
   await page.goto("/");
-  await page.getByRole("link", { name: "Previous", exact: true }).click();
+  await page.getByRole("link", { name: "Archive", exact: true }).click();
   await expect(page.getByRole("link", { name: /No\. 3.*Today/ })).toBeVisible();
   await page.getByRole("link", { name: /No\. 1/ }).click();
   await expect(page).toHaveURL(/\/archive\/1/);

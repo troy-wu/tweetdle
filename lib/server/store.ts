@@ -181,7 +181,8 @@ const globalStore = globalThis as typeof globalThis & { __tweetdleStore?: Store 
 
 export function getStore(): Store {
   if (!globalStore.__tweetdleStore) {
-    const admin = getAdminClient();
+    // Fixture mode (end-to-end tests) never touches the real database, even with keys in .env.local.
+    const admin = process.env.TWEETDLE_FIXTURES === "1" ? null : getAdminClient();
     globalStore.__tweetdleStore = admin ? createSupabaseStore(admin) : createMemoryStore();
   }
   return globalStore.__tweetdleStore;

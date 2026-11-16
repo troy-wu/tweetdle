@@ -34,12 +34,9 @@ export function Home() {
         <Link href="/play" className="btn btn-accent btn-xl w-full">
           {done ? "See today\u2019s result" : inProgress ? "Continue" : "Play"}
         </Link>
-        <p className="flex justify-center gap-4 whitespace-nowrap text-sm">
+        <p className="flex justify-center gap-5 text-sm">
           <Link href="/leaderboard" className="link">
             Leaderboard
-          </Link>
-          <Link href="/archive" className="link">
-            Previous
           </Link>
           <button type="button" className="link" onClick={() => open("help")}>
             How to play
@@ -61,9 +58,14 @@ export function Home() {
         {done && <Countdown />}
       </div>
 
-      <Link href="/unlimited" className="text-xs text-muted hover:text-ink">
-        Unlimited mode
-      </Link>
+      <p className="flex justify-center gap-4 text-xs">
+        <Link href="/archive" className="text-muted hover:text-ink">
+          Archive
+        </Link>
+        <Link href="/unlimited" className="text-muted hover:text-ink">
+          Unlimited mode
+        </Link>
+      </p>
     </div>
   );
 }

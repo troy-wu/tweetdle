@@ -25,7 +25,7 @@ export function Archive() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="font-display text-4xl font-bold">Previous puzzles</h1>
+        <h1 className="font-display text-4xl font-bold">Archive</h1>
         <p className="mt-1 text-sm text-muted">Catch up on any day you missed. Only the day itself counts for your streak.</p>
       </div>
       {!ready ? (
